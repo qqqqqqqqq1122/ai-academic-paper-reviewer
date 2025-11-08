@@ -4,14 +4,22 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const utils_1 = require("./utils");
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const OWNER = process.env.GITHUB_OWNER;
-const REPO = process.env.GITHUB_REPO;
+
+// 新增兜底：从 GITHUB_REPOSITORY 拆 owner/repo
+const GH_REPOSITORY = process.env.GITHUB_REPOSITORY || "";
+const [FALLBACK_OWNER, FALLBACK_REPO] = GH_REPOSITORY.split("/");
+
+// 原逻辑 + 兜底
+const OWNER = process.env.GITHUB_OWNER || FALLBACK_OWNER;
+const REPO = process.env.GITHUB_REPO || FALLBACK_REPO;
+
 const EXCLUDE_PATHS = ((_a = process.env.EXCLUDE_PATHS) === null || _a === void 0 ? void 0 : _a.split(',').map(p => p.trim())) || [];
 const LANGUAGE = process.env.LANGUAGE || "English";
 const PR_NUMBER = Number(process.env.GITHUB_PR_NUMBER) || 1;
 const MODEL_CODE = process.env.MODEL_CODE || "models/gemini-2.0-flash";
 const USE_SINGLE_COMMENT_REVIEW = process.env.USE_SINGLE_COMMENT_REVIEW === 'true';
 const REVIEW_MODE = process.env.REVIEW_MODE || "CODE";
+
 // Check for GEMINI_API_KEY first (optional)
 if (!GEMINI_API_KEY) {
     console.log("⚠️  GEMINI_API_KEY is not configured. Skipping AI review.");
@@ -27,12 +35,13 @@ if (!OWNER) {
 if (!REPO) {
     throw new Error("REPO is missing");
 }
-// レビューモードに応じて適切な関数を選択
+
 const isAcademicMode = REVIEW_MODE === "ACADEMIC";
 const promptFn = isAcademicMode ? utils_1.createAcademicReviewPrompt : utils_1.createReviewPrompt;
 const generateFn = USE_SINGLE_COMMENT_REVIEW
     ? (isAcademicMode ? utils_1.generateAcademicReviewText : utils_1.generateReviewCommentText)
     : (isAcademicMode ? utils_1.generateAcademicReviewObject : utils_1.generateReviewCommentObject);
+
 (0, utils_1.runReviewBotVercelAI)({
     githubToken: GITHUB_TOKEN,
     owner: OWNER,
