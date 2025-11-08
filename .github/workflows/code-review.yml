@@ -23,23 +23,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Check API Key
-        run: |
-          if [ -z "${{ secrets.GEMINI_API_KEY }}" ]; then
-            echo "❌ GEMINI_API_KEY is not set"
-            exit 1
-          fi
-          echo "✅ GEMINI_API_KEY is configured"
-
-      - name: Debug base env
+      - name: Debug repo context
         run: |
           echo "github.repository=${{ github.repository }}"
           echo "github.repository_owner=${{ github.repository_owner }}"
           echo "event.repository.name=${{ github.event.repository.name }}"
           echo "GITHUB_REPOSITORY=$GITHUB_REPOSITORY"
-          echo "Will set GITHUB_OWNER and GITHUB_REPO next step"
 
-      - name: Gemini Code Review Bot
+      - name: AI Reviewer
         uses: Nasubikun/ai-reviewer@v1
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -47,10 +38,5 @@ jobs:
           MODEL_CODE: "models/gemini-2.0-flash"
           LANGUAGE: "Chinese"
           EXCLUDE_PATHS: "node_modules/**,dist/**,*.lock,*.log"
-        env:
-          # 关键：dist/index.js 需要的两个变量
-          GITHUB_OWNER: ${{ github.repository_owner }}
-          GITHUB_REPO: ${{ github.event.repository.name }}
-          # 下面两个是你代码里也会读取的（当前 action.yml 若尚未声明 inputs 就只能以 env 传）
           REVIEW_MODE: "ACADEMIC"
           USE_SINGLE_COMMENT_REVIEW: "true"
