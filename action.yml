@@ -52,7 +52,7 @@ runs:
         # 统一 push / pull_request 都存在
         GITHUB_OWNER: ${{ github.repository_owner }}
         GITHUB_REPO: ${{ github.event.repository.name }}
-        GITHUB_REPOSITORY: ${{ github.repository }}
+        # GITHUB_REPOSITORY: ${{ github.repository }}
         # PR 场景才有值；push 时为空 → dist 中需容错
         GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
 
