@@ -1,4 +1,3 @@
----
 name: "AI Code Review"
 
 permissions:
@@ -21,6 +20,9 @@ jobs:
   code-review:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Check API Key
         run: |
           if [ -z "${{ secrets.GEMINI_API_KEY }}" ]; then
@@ -34,6 +36,13 @@ jobs:
             exit 1
           fi
           echo "✅ GEMINI_API_KEY is configured"
+
+      - name: Debug REPO
+        run: |
+          echo "github.repository=${{ github.repository }}"
+          echo "REPO from env=$REPO"
+          env | grep -i REPO || true
+
       - name: Gemini Code Review Bot
         uses: Nasubikun/ai-reviewer@v1
         with:
@@ -42,3 +51,8 @@ jobs:
           LANGUAGE: "Chinese"
           EXCLUDE_PATHS: "node_modules/**,dist/**,*.lock,*.log"
           MODEL_CODE: "models/gemini-2.0-flash"
+          # 如果你的 Action 支持该输入，可开启单条评论模式：
+          # USE_SINGLE_COMMENT_REVIEW: "true"
+        env:
+          # 关键：显式把 REPO 传入 Composite Action 内部
+          REPO: ${{ github.repository }}
