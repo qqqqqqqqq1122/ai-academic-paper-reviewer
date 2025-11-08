@@ -16,7 +16,7 @@ inputs:
     description: "Gemini model code"
     default: "models/gemini-2.0-flash"
   LANGUAGE:
-    description: "Language for comments"
+    description: "Language for review comments"
     default: "English"
   EXCLUDE_PATHS:
     description: "Comma-separated glob patterns to exclude"
@@ -27,13 +27,9 @@ inputs:
     required: false
     default: "CODE"
   USE_SINGLE_COMMENT_REVIEW:
-    description: "true for single summary comment; false for inline"
+    description: "true: single summary comment; false: inline comments"
     required: false
     default: "false"
-  REPO:
-    description: "owner/repo slug (optional). If empty, fallback to github.repository."
-    required: false
-    default: ""
 
 runs:
   using: "composite"
@@ -52,20 +48,13 @@ runs:
       env:
         GEMINI_API_KEY: ${{ inputs.GEMINI_API_KEY }}
         GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
-
-        # 关键：为 dist/index.js 提供统一可用的 owner/repo
+        # 统一 push / PR 都可用
         GITHUB_OWNER: ${{ github.repository_owner }}
         GITHUB_REPO: ${{ github.event.repository.name }}
-
-        # push 下为空即可，dist 里默认 1（建议后续改为 0 并在代码判空）
         GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
-
         LANGUAGE: ${{ inputs.LANGUAGE }}
         MODEL_CODE: ${{ inputs.MODEL_CODE }}
         EXCLUDE_PATHS: ${{ inputs.EXCLUDE_PATHS }}
         REVIEW_MODE: ${{ inputs.REVIEW_MODE }}
         USE_SINGLE_COMMENT_REVIEW: ${{ inputs.USE_SINGLE_COMMENT_REVIEW }}
-
-        # 备用：允许显式传 REPO
-        REPO: ${{ inputs.REPO != '' && inputs.REPO || github.repository }}
       run: cd "${GITHUB_ACTION_PATH}" && node dist/index.js
