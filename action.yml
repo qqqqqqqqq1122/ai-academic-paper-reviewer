@@ -31,7 +31,7 @@ inputs:
     required: false
     default: "false"
   REPO:
-    description: "owner/repo slug (optional). Fallbacks to github.repository."
+    description: "owner/repo slug (optional). If empty, fallback to github.repository."
     required: false
     default: ""
 
@@ -42,23 +42,30 @@ runs:
       uses: actions/setup-node@v3
       with:
         node-version: 22
+
     - name: Install dependencies
       shell: bash
       run: cd "${GITHUB_ACTION_PATH}" && npm install
+
     - name: Run reviewer
       shell: bash
       env:
         GEMINI_API_KEY: ${{ inputs.GEMINI_API_KEY }}
         GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
-        # push 与 PR 都可用的 repo 名（官方事件对象）
+
+        # 关键：为 dist/index.js 提供不依赖 PR 的 owner/repo
         GITHUB_OWNER: ${{ github.repository_owner }}
         GITHUB_REPO: ${{ github.event.repository.name }}
+
+        # PR 号：push 下为空即可，dist 里你已做默认 1（建议后续在代码里改为更安全的 0 或判空）
         GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
+
         LANGUAGE: ${{ inputs.LANGUAGE }}
         MODEL_CODE: ${{ inputs.MODEL_CODE }}
         EXCLUDE_PATHS: ${{ inputs.EXCLUDE_PATHS }}
         REVIEW_MODE: ${{ inputs.REVIEW_MODE }}
         USE_SINGLE_COMMENT_REVIEW: ${{ inputs.USE_SINGLE_COMMENT_REVIEW }}
-        # 提供脚本需要的 REPO（可输入覆盖）
+
+        # 如果你想允许显式传 REPO 覆盖，保留一份备用（dist 未使用就算了）
         REPO: ${{ inputs.REPO != '' && inputs.REPO || github.repository }}
       run: cd "${GITHUB_ACTION_PATH}" && node dist/index.js
