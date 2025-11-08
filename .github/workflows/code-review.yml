@@ -15,7 +15,14 @@ on:
       - '**/*.md'
     types: [opened, synchronize, reopened]
   workflow_dispatch:
-
+# name: Debug repo context
+#   run: |
+#     echo "github.repository=${{ github.repository }}"
+#     echo "github.repository_owner=${{ github.repository_owner }}"
+#     echo "event.repository.name=${{ github.event.repository.name }}"
+#     echo "GITHUB_REPOSITORY=$GITHUB_REPOSITORY"
+#     echo "Event name: ${{ github.event_name }}"
+#     echo "Event action: ${{ github.event.action }}"
 jobs:
   code-review:
     runs-on: ubuntu-latest
