@@ -5,11 +5,11 @@ const utils_1 = require("./utils");
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
-// 新增兜底：从 GITHUB_REPOSITORY 拆 owner/repo
+// 从 GITHUB_REPOSITORY 拆分兜底
 const GH_REPOSITORY = process.env.GITHUB_REPOSITORY || "";
 const [FALLBACK_OWNER, FALLBACK_REPO] = GH_REPOSITORY.split("/");
 
-// 原逻辑 + 兜底
+// 原变量 + 兜底
 const OWNER = process.env.GITHUB_OWNER || FALLBACK_OWNER;
 const REPO = process.env.GITHUB_REPO || FALLBACK_REPO;
 
