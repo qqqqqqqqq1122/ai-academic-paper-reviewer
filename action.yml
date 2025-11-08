@@ -19,7 +19,7 @@ inputs:
     description: "Language for review comments"
     default: "English"
   EXCLUDE_PATHS:
-    description: "Comma-separated glob patterns to exclude"
+    description: "Comma-separated glob patterns to exclude (e.g. node_modules/**,dist/**)"
     required: false
     default: ""
   REVIEW_MODE:
@@ -27,7 +27,7 @@ inputs:
     required: false
     default: "CODE"
   USE_SINGLE_COMMENT_REVIEW:
-    description: "true: single summary comment; false: inline comments"
+    description: "true for single summary comment; false for inline comments"
     required: false
     default: "false"
 
@@ -48,10 +48,14 @@ runs:
       env:
         GEMINI_API_KEY: ${{ inputs.GEMINI_API_KEY }}
         GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
-        # 统一 push / PR 都可用
+
+        # 统一 push / pull_request 都存在
         GITHUB_OWNER: ${{ github.repository_owner }}
         GITHUB_REPO: ${{ github.event.repository.name }}
+
+        # PR 场景才有值；push 时为空 → dist 中需容错
         GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
+
         LANGUAGE: ${{ inputs.LANGUAGE }}
         MODEL_CODE: ${{ inputs.MODEL_CODE }}
         EXCLUDE_PATHS: ${{ inputs.EXCLUDE_PATHS }}
