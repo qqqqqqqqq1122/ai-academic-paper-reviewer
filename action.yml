@@ -1,6 +1,5 @@
-# action.yml
-name: "AI Academic Paper Reviewer"
-description: "AI-powered academic paper review bot that provides educational feedback using Gemini AI"
+name: "AI Code/Paper Reviewer"
+description: "AI-powered review bot using Gemini"
 branding:
   icon: "book-open"
   color: "purple"
@@ -14,47 +13,52 @@ inputs:
     description: "GitHub Token"
     required: true
   MODEL_CODE:
-    description: "Model code for Gemini"
+    description: "Gemini model code"
     default: "models/gemini-2.0-flash"
   LANGUAGE:
-    description: "Preferred language for review comments"
+    description: "Language for comments"
     default: "English"
   EXCLUDE_PATHS:
-    description: "Patterns to exclude from review (comma-separated). Example: *.bib,*.sty,*.cls"
+    description: "Comma-separated glob patterns to exclude"
     required: false
     default: ""
   REVIEW_MODE:
-    description: "Review mode: ACADEMIC for academic papers, CODE for code reviews"
+    description: "ACADEMIC or CODE"
     required: false
     default: "CODE"
   USE_SINGLE_COMMENT_REVIEW:
-    description: "When true, posts all review results in a single comment. When false, posts line-specific comments."
+    description: "true for single summary comment; false for inline"
     required: false
     default: "false"
+  REPO:
+    description: "owner/repo slug (optional). Fallbacks to github.repository."
+    required: false
+    default: ""
 
 runs:
   using: "composite"
   steps:
-    - name: Set up Node
+    - name: Setup Node
       uses: actions/setup-node@v3
       with:
         node-version: 22
-
     - name: Install dependencies
-      run: cd ${GITHUB_ACTION_PATH} && npm install
       shell: bash
-
-    - name: Run review bot
-      run: cd ${GITHUB_ACTION_PATH} && node dist/index.js
+      run: cd "${GITHUB_ACTION_PATH}" && npm install
+    - name: Run reviewer
       shell: bash
       env:
         GEMINI_API_KEY: ${{ inputs.GEMINI_API_KEY }}
         GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
+        # push 与 PR 都可用的 repo 名（官方事件对象）
         GITHUB_OWNER: ${{ github.repository_owner }}
-        GITHUB_REPO: ${{ github.event.pull_request.head.repo.name }}
+        GITHUB_REPO: ${{ github.event.repository.name }}
         GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
         LANGUAGE: ${{ inputs.LANGUAGE }}
         MODEL_CODE: ${{ inputs.MODEL_CODE }}
         EXCLUDE_PATHS: ${{ inputs.EXCLUDE_PATHS }}
         REVIEW_MODE: ${{ inputs.REVIEW_MODE }}
         USE_SINGLE_COMMENT_REVIEW: ${{ inputs.USE_SINGLE_COMMENT_REVIEW }}
+        # 提供脚本需要的 REPO（可输入覆盖）
+        REPO: ${{ inputs.REPO != '' && inputs.REPO || github.repository }}
+      run: cd "${GITHUB_ACTION_PATH}" && node dist/index.js
