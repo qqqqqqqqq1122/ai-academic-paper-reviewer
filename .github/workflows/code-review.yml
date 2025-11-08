@@ -26,22 +26,18 @@ jobs:
       - name: Check API Key
         run: |
           if [ -z "${{ secrets.GEMINI_API_KEY }}" ]; then
-            echo "❌ Error: GEMINI_API_KEY is not set in repository secrets"
-            echo "📝 Please add GEMINI_API_KEY to your repository secrets:"
-            echo "   1. Go to Settings → Secrets and variables → Actions"
-            echo "   2. Click 'New repository secret'"
-            echo "   3. Name: GEMINI_API_KEY"
-            echo "   4. Value: Your Google AI Studio API key"
-            echo "🔗 Get your API key at: https://makersuite.google.com/app/apikey"
+            echo "❌ GEMINI_API_KEY is not set"
             exit 1
           fi
           echo "✅ GEMINI_API_KEY is configured"
 
-      - name: Debug REPO
+      - name: Debug env before action
         run: |
           echo "github.repository=${{ github.repository }}"
-          echo "REPO from env=$REPO"
-          env | grep -i REPO || true
+          echo "GITHUB_REPOSITORY=$GITHUB_REPOSITORY"
+          echo "GITHUB_OWNER(before)=$GITHUB_OWNER"
+          echo "GITHUB_REPO(before)=$GITHUB_REPO"
+          env | grep -E 'GITHUB_(OWNER|REPO)$' || true
 
       - name: Gemini Code Review Bot
         uses: Nasubikun/ai-reviewer@v1
@@ -51,8 +47,8 @@ jobs:
           LANGUAGE: "Chinese"
           EXCLUDE_PATHS: "node_modules/**,dist/**,*.lock,*.log"
           MODEL_CODE: "models/gemini-2.0-flash"
-          # 如果你的 Action 支持该输入，可开启单条评论模式：
-          # USE_SINGLE_COMMENT_REVIEW: "true"
+          REVIEW_MODE: "CODE"
         env:
-          # 关键：显式把 REPO 传入 Composite Action 内部
-          REPO: ${{ github.repository }}
+          # 关键：显式传入 dist/index.js 需要的变量名
+          GITHUB_OWNER: ${{ github.repository_owner }}
+          GITHUB_REPO: ${{ github.event.repository.name }}
