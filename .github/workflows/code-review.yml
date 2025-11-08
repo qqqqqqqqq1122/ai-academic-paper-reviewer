@@ -31,24 +31,26 @@ jobs:
           fi
           echo "✅ GEMINI_API_KEY is configured"
 
-      - name: Debug env before action
+      - name: Debug base env
         run: |
           echo "github.repository=${{ github.repository }}"
+          echo "github.repository_owner=${{ github.repository_owner }}"
+          echo "event.repository.name=${{ github.event.repository.name }}"
           echo "GITHUB_REPOSITORY=$GITHUB_REPOSITORY"
-          echo "GITHUB_OWNER(before)=$GITHUB_OWNER"
-          echo "GITHUB_REPO(before)=$GITHUB_REPO"
-          env | grep -E 'GITHUB_(OWNER|REPO)$' || true
+          echo "Will set GITHUB_OWNER and GITHUB_REPO next step"
 
       - name: Gemini Code Review Bot
         uses: Nasubikun/ai-reviewer@v1
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          MODEL_CODE: "models/gemini-2.0-flash"
           LANGUAGE: "Chinese"
           EXCLUDE_PATHS: "node_modules/**,dist/**,*.lock,*.log"
-          MODEL_CODE: "models/gemini-2.0-flash"
-          REVIEW_MODE: "CODE"
         env:
-          # 关键：显式传入 dist/index.js 需要的变量名
+          # 关键：dist/index.js 需要的两个变量
           GITHUB_OWNER: ${{ github.repository_owner }}
           GITHUB_REPO: ${{ github.event.repository.name }}
+          # 下面两个是你代码里也会读取的（当前 action.yml 若尚未声明 inputs 就只能以 env 传）
+          REVIEW_MODE: "ACADEMIC"
+          USE_SINGLE_COMMENT_REVIEW: "true"
