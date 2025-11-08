@@ -31,7 +31,7 @@ jobs:
           echo "GITHUB_REPOSITORY=$GITHUB_REPOSITORY"
 
       - name: AI Reviewer
-        uses: Nasubikun/ai-reviewer@v1
+        uses: Nasubikun/ai-reviewer@main
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
